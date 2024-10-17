@@ -15,7 +15,7 @@ app.use(cors({
 
 
 
-app.get("/movie/get-movie", async (req,res) => {
+app.get("/movie/get-movies", async (req,res) => {
 
     try{
             // connect the database
@@ -38,8 +38,9 @@ app.get("/movie/get-movie", async (req,res) => {
 });
 
 app.get("movie/:id", async (req,res) => {
-    const id = req.params.id;
+    
     try{
+        const id = req.params.id;
         // connect the database
         const client = new MongoClient(URL,{}).connect();
         // select the db
