@@ -27,7 +27,7 @@ app.get("/movie/get-movie", async (req,res) => {
             //do the operation 
             let movies = await collection.find({}).toArray();
             //close the connection
-           await (await client).close();
+          (await client).close();
 
  res.json(movies);
     }
@@ -47,11 +47,11 @@ app.get("movie/:id", async (req,res) => {
         //select the collection
         let dbcollection = await db.collection(COLLECTION_NAME);
         //do the operation 
-        let movie = await dbcollection.findOne({_id : new ObjectId(id)})
+        let movie = await dbcollection.findOne({ _id : new ObjectId(id) });
         //close the connection
-       await (await client).close();
+        (await client).close();
 
-res.json(movie);
+        res.json(movie);
 }
 catch(error){
     console.log(error);
