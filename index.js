@@ -15,7 +15,7 @@ app.use(cors({
 
 
 
-app.get("/movie/get-movies", async (req,res) => {
+app.get("/movie/get-movie", async (req,res) => {
 
     try{
             // connect the database
