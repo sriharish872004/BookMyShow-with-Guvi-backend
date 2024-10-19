@@ -13,7 +13,7 @@ app.use(cors({
     origin : "*"
 }));
 
-
+app.use(express.json());
 
 app.get("/movie/get-movies", async (req,res) => {
 
