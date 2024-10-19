@@ -91,11 +91,11 @@ app.post("/movie/book-movie", async (req, res) => {
   
       /**
        * Find the movie
-       * if movie is not found throw error else
-       * check if the seats are available
+       * If movie is not found throw error else
+       * Check if the seats are available
        * Find the show and get the seat
        * If the available seat is less than requested seat a:10 r:11
-       * Throw error
+       * Throw an error
        * Else book the seat
        */
       console.log(bookingRequest.movieId);
