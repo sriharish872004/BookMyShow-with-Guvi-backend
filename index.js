@@ -41,16 +41,25 @@ app.get("/movie/:id", async (req,res) => {
     
     try{
         const id  = req.params.id;
+
+        if (!ObjectId.isValid(id)) {
+          return res.status(400).json({ message: "Invalid movie ID" });
+        }
+
         // connect the database
         const client = new MongoClient(URL,{}).connect();
         // select the db
         let db = (await client).db(DB_NAME);
         //select the collection
-        let dbcollection = await db.collection(COLLECTION_NAME);
+        let collection = await db.collection(COLLECTION_NAME);
         //do the operation 
-        let movie = await dbcollection.findOne({ _id: new ObjectId(id) });
+        let movie = await collection.findOne({ _id: new ObjectId(id) });
         //close the connection
         (await client).close();
+
+        if (!movie) {
+          return res.status(404).json({ message: "Movie not found" });
+        }
 
         res.json(movie);
 }
