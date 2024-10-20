@@ -65,7 +65,17 @@ app.get("/movie/:id", async (req, res) => {
 
 app.post("/movie/book-movie", async (req, res) => {
   let bookingRequest = req.body;
+  /**
+ * Find the movie
+ * if movie is not found throw error else
+ * check if the seats are available
+ * Find the show and get the seat
+ * If the available seat is less than requested seat a:10 r:11
+ * Throw error
+ * Else book the seat
+ */
 
+  // Check for missing fields
   if (
     !bookingRequest.movieId ||
     !bookingRequest.showId ||
@@ -76,41 +86,32 @@ app.post("/movie/book-movie", async (req, res) => {
   ) {
     return res.status(401).json({ message: "Some fields are missing" });
   }
+
   let requestedSeat = parseInt(bookingRequest.seats);
 
-  // NaN -> Not a Number
+  // Validate seat count
   if (isNaN(requestedSeat) || requestedSeat <= 0) {
-    return res.status(401).json({ message: "In valid seat count" });
+    return res.status(401).json({ message: "Invalid seat count" });
   }
 
   try {
-    // Step 1. Connect the Database
+    // Step 1: Connect to the database
     const client = new MongoClient(URL, {}).connect();
 
-    // Step 2. Select the DB
+    // Step 2: Select the DB
     let db = (await client).db(DB_NAME);
 
-    // Step 3. Select the Collection
+    // Step 3: Select the collection
     let dbcollection = await db.collection(COLLECTION_NAME);
 
-    /**
-     * Find the movie
-     * if movie is not found throw error else
-     * check if the seats are available
-     * Find the show and get the seat
-     * If the available seat is less than requested seat a:10 r:11
-     * Throw error
-     * Else book the seat
-     */
-    console.log(bookingRequest.movieId);
-    let movie = await dbcollection.findOne({
-      _id: new ObjectId(bookingRequest.movieId),
-    });
+    // Find the movie by string movieId (no ObjectId conversion)
+    let movie = await dbcollection.findOne({ _id: bookingRequest.movieId });
 
     if (!movie) {
       return res.status(404).json({ message: "Requested movie is not found" });
     }
 
+    // Find the correct show by showId (assumed to be a string)
     const show = Object.values(movie.shows)
       .flat()
       .find((s) => s.id === bookingRequest.showId);
@@ -119,21 +120,23 @@ app.post("/movie/book-movie", async (req, res) => {
       return res.status(404).json({ message: "Show not Found" });
     }
 
+    // Check if enough seats are available
     if (parseInt(show.seats) < requestedSeat) {
-      return res.status(404).json({ message: "No enough seats avilable" });
+      return res.status(404).json({ message: "Not enough seats available" });
     }
 
     const updateSeats = parseInt(show.seats) - requestedSeat;
 
+    // Find the date of the show
     const date = Object.keys(movie.shows).find((d) =>
       movie.shows[d].some((s) => s.id === bookingRequest.showId)
     );
-    console.log(movie.shows[date]);
+
     const showIndex = movie.shows[date].findIndex(
       (s) => s.id === bookingRequest.showId
     );
-    console.log(showIndex);
 
+    // Prepare the user booking data
     const userBooking = {
       name: bookingRequest.name,
       email: bookingRequest.email,
@@ -141,9 +144,10 @@ app.post("/movie/book-movie", async (req, res) => {
       seats: bookingRequest.seats,
     };
 
+    // Update the seats and add the booking
     const updatedResult = await dbcollection.updateOne(
       {
-        _id: new ObjectId(bookingRequest.movieId),
+        _id: bookingRequest.movieId, // No ObjectId conversion here
       },
       {
         $set: {
@@ -166,4 +170,6 @@ app.post("/movie/book-movie", async (req, res) => {
   }
 });
 
+
 app.listen(8000);
+
