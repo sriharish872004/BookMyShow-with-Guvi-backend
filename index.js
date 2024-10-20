@@ -52,7 +52,7 @@ app.get("/movie/:id", async (req, res) => {
     // Step 3. Select the Collection
     let dbcollection = await db.collection(COLLECTION_NAME);
 
-    let movie = await dbcollection.findOne({ _id: new ObjectId(id) });
+    let movie = await dbcollection.findOne({ _id: id });
 
     (await client).close();
 
